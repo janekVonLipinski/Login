@@ -20,11 +20,31 @@
 </form>
 
 <h3>Response</h3>
+<p id="statusMessage"></p>
 <pre id="response"></pre>
 
 <script>
     const baseUrl = 'http://localhost:8080/api/login';
     const responseEl = document.getElementById('response');
+    const statusMessageEl = document.getElementById('statusMessage');
+
+    async function handleResponse(res, successMsg, failureMsg) {
+      try {
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : null;
+
+        if (res.ok) {
+          statusMessageEl.textContent = successMsg;
+        } else {
+          statusMessageEl.textContent = failureMsg + ` (${res.status})`;
+        }
+
+        responseEl.textContent = data ? JSON.stringify(data, null, 2) : "(no content)";
+      } catch (err) {
+        statusMessageEl.textContent = "Error parsing response.";
+        responseEl.textContent = err.message;
+      }
+    }
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -34,10 +54,10 @@
       try {
         const url = `${baseUrl}?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
         const res = await fetch(url);
-        const data = await res.json();
-        responseEl.textContent = JSON.stringify(data, null, 2);
+        await handleResponse(res, "Login successful", "Login failed");
       } catch (err) {
-        responseEl.textContent = 'Error: ' + err.message;
+        statusMessageEl.textContent = "Login error";
+        responseEl.textContent = err.message;
       }
     });
 
@@ -52,10 +72,10 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-        const data = await res.json();
-        responseEl.textContent = JSON.stringify(data, null, 2);
+        await handleResponse(res, "Register successful", "Register failed");
       } catch (err) {
-        responseEl.textContent = 'Error: ' + err.message;
+        statusMessageEl.textContent = "Registration error";
+        responseEl.textContent = err.message;
       }
     });
 </script>
