@@ -11,7 +11,4 @@ public class DatabaseConnectionApplication {
 	}
 
 
-	public static void cli() {
-		String
-	}
 }
